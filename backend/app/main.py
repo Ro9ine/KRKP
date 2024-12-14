@@ -54,3 +54,9 @@ def delete_task(task_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Task not found")
     return task
 
+@app.patch("/tasks/{task_id}/toggle-status", response_model=schemas.Task)
+def toggle_task_status(task_id: int, db: Session = Depends(get_db)):
+    task = crud.toggle_task_status(db, task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    return task

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography } from '@mui/material';
 import TaskList from './components/TaskList';
 import AddTask from './components/AddTask';
-import { fetchTasks, deleteTask } from './api';
+import { fetchTasks, toggleTaskStatus, deleteTask } from './api';
 
 function App() {
     const [tasks, setTasks] = useState([]);
@@ -19,8 +19,17 @@ function App() {
         loadTasks();
     }, []);
 
-    const handleTaskAdded = (newTask) => {
-        setTasks((prev) => [...prev, newTask]);
+    const handleTaskStatusToggled = async (taskId) => {
+        try {
+            const updatedTask = await toggleTaskStatus(taskId);
+            setTasks((prev) =>
+                prev.map((task) =>
+                    task.id === updatedTask.id ? updatedTask : task
+                )
+            );
+        } catch (error) {
+            console.error('Error toggling task status:', error);
+        }
     };
 
     const handleTaskDeleted = async (taskId) => {
@@ -37,8 +46,12 @@ function App() {
             <Typography variant="h4" gutterBottom>
                 Employee Task Manager
             </Typography>
-            <AddTask onTaskAdded={handleTaskAdded} />
-            <TaskList tasks={tasks} onTaskDeleted={handleTaskDeleted} />
+            <AddTask onTaskAdded={(newTask) => setTasks((prev) => [...prev, newTask])} />
+            <TaskList
+                tasks={tasks}
+                onTaskStatusToggled={handleTaskStatusToggled}
+                onTaskDeleted={handleTaskDeleted}
+            />
         </Container>
     );
 }

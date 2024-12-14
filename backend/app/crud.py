@@ -39,3 +39,12 @@ def delete_task(db: Session, task_id: int):
     db.delete(task)
     db.commit()
     return task
+
+def toggle_task_status(db: Session, task_id: int):
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        return None
+    task.status = "completed" if task.status != "completed" else "in progress"
+    db.commit()
+    db.refresh(task)
+    return task

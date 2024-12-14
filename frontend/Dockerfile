@@ -1,22 +1,19 @@
-# Используем официальный образ Node.js
+# Используем официальный образ Node.js для сборки
 FROM node:16 AS build
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем package.json и package-lock.json
+# Копируем только package.json и package-lock.json для кеширования зависимостей
 COPY package.json package-lock.json ./
 
-# Устанавливаем зависимости
+# Устанавливаем ВСЕ зависимости, включая devDependencies
 RUN npm install
 
-# Устанавливаем дополнительные зависимости (например, @mui/icons-material)
-RUN npm install @mui/icons-material@5.14.0
-
-# Копируем все файлы проекта в контейнер
+# Копируем остальные файлы проекта
 COPY . .
 
-# Убедимся, что react-scripts исполняемый
+# Убедимся, что react-scripts доступен
 RUN chmod +x node_modules/.bin/react-scripts
 
 # Собираем проект
@@ -25,8 +22,8 @@ RUN npm run build
 # Используем легковесный сервер для запуска собранного фронтенда
 FROM nginx:alpine
 
-# Копируем собранные файлы из предыдущего этапа
-COPY --from=build /app/build /usr/share/nginx/html
+# Копируем собранные файлы из этапа сборки
+COPY --from=build /app/build /usr/share/nginx/html/
 
 # Открываем порт
 EXPOSE 3000
